@@ -1,0 +1,22 @@
+function App(){
+
+return (<>
+
+write all your code here
+
+</>)
+}
+
+
+
+function App(){
+
+return (<div>
+
+write all your code here
+
+</div>)
+}
+
+
+export default App;

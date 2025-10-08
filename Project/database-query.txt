@@ -1,0 +1,7 @@
+CREATE DATABASE course_advising;
+
+CREATE TABLE user_info( u_id int NOT NULL PRIMARY KEY AUTO_INCREMENT, u_first_name varchar(50) NOT NULL, u_last_name varchar(50) NOT NULL, u_email varchar(50) NOT NULL, u_password varchar(75) NOT NULL, is_verified INT NOT null, is_admin int NOT null );
+
+
+---update
+UPDATE `user_info` SET `u_password`='987654321' WHERE u_id=1;
