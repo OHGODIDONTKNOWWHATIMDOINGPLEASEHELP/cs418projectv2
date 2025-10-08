@@ -1,21 +1,32 @@
+// Single source of truth for API calls
+
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-if (!window.__loggedApiBase) {
+
+// one-time log so you can confirm the base in the browser console
+if (!window.__apiBaseLogged) {
   console.log('[API BASE]', API, 'from', window.location.origin);
-  window.__loggedApiBase = true;
+  window.__apiBaseLogged = true;
 }
 
-
-export async function api(path, { method='GET', body, token } = {}) {
+export async function api(path, { method = 'GET', body, token, headers } = {}) {
   const res = await fetch(`${API}${path}`, {
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(headers || {})
     },
     credentials: 'include',
     body: body ? JSON.stringify(body) : undefined
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-  return data;
+
+  // Try to parse JSON; tolerate empty bodies
+  let data = null;
+  try { data = await res.json(); } catch {}
+
+  if (!res.ok) {
+    const msg = (data && (data.error || data.message)) || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return data ?? {};
 }
