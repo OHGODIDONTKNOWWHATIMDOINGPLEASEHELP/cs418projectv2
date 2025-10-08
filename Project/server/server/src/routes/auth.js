@@ -75,8 +75,11 @@ router.post('/login', async (req, res) => {
   });
 
   // temp token limited to 10 minutes, used only to hit /verify-2fa
-  const tempToken = signJwt({ uid: user.id, step: '2fa' }, { expiresIn: '10m' });
-  res.json({ ok: true, tempToken });
+const tempToken = signJwt({ uid: user.id, step: '2fa' }, { expiresIn: '10m' });
+
+// ADD userId here:
+res.json({ ok: true, tempToken, userId: user.id });
+
 });
 
 // 10 Verify 2FA (issue full JWT)

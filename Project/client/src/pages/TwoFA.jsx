@@ -12,23 +12,52 @@ export default function TwoFA() {
   async function submit(e) {
     e.preventDefault();
     setMsg('');
+
     try {
-      const tempToken = sessionStorage.getItem('tempToken');
-      const email = sessionStorage.getItem('loginEmail');
-      // who is the user? lookup minimal id with a small helper endpoint or pass id via temp JWT on server;
-      // to keep minimal, add a tiny endpoint or re-query by email:
-      const r = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/admin/users`);
-      // In a real app you'd have a dedicated endpoint to translate tempToken -> userId.
-      // For brevity, let's assume we add the userId to sessionStorage when server returned login (or decode from temp JWT).
-    } catch (e) { setMsg(e.message); }
+      const userId = sessionStorage.getItem('userId');
+      if (!userId) throw new Error('Missing userId. Please log in again.');
+
+      // If you also want to pass the temp token, you can include it here,
+      // but with the current server route it’s not required:
+      // const tempToken = sessionStorage.getItem('tempToken');
+
+      const { token, user } = await api('/auth/verify-2fa', {
+        method: 'POST',
+        body: { userId, code }
+        // If you update the server to require the temp token, you can include it in headers
+        // via the api() helper by adding an Authorization header, or add it to the body.
+      });
+
+      // Persist auth for the app
+      saveAuth(token, user);
+
+      // Clean up transient login stuff
+      sessionStorage.removeItem('tempToken');
+      sessionStorage.removeItem('userId');
+      sessionStorage.removeItem('loginEmail');
+
+      nav('/me');
+    } catch (e) {
+      setMsg(e.message);
+    }
   }
 
   return (
     <form onSubmit={submit}>
       <h2>Enter 2FA code</h2>
-      <input placeholder="123456" value={code} onChange={e=>setCode(e.target.value)}/>
-      <button>Verify</button>
-      <p>{msg}</p>
+      <input
+        className="input"
+        placeholder="123456"
+        inputMode="numeric"
+        maxLength={6}
+        value={code}
+        onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
+        autoFocus
+      />
+      <div className="actions">
+        <button className="btn">Verify</button>
+      </div>
+      {msg && <p className="alert error">{msg}</p>}
     </form>
   );
 }
