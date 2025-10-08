@@ -1,4 +1,9 @@
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+if (!window.__loggedApiBase) {
+  console.log('[API BASE]', API, 'from', window.location.origin);
+  window.__loggedApiBase = true;
+}
+
 
 export async function api(path, { method='GET', body, token } = {}) {
   const res = await fetch(`${API}${path}`, {

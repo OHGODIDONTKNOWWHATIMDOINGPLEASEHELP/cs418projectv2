@@ -4,6 +4,13 @@ import bcrypt from 'bcryptjs';
 import User from './models/User.js';
 
 const run = async () => {
+  const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/cs418projectv2';
+if (!mongoUri) {
+  console.error('Missing MONGO_URI for seed script');
+  process.exit(1);
+}
+await mongoose.connect(mongoUri);
+
   await mongoose.connect(process.env.MONGO_URI);
   const email = process.env.ADMIN_EMAIL?.toLowerCase();
   if (!email) throw new Error('ADMIN_EMAIL not set');

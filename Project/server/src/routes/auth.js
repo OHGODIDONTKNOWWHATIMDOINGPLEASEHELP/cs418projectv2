@@ -40,6 +40,21 @@ router.post('/register', async (req, res) => {
   res.json({ ok: true, message: 'registered, verification email sent' });
 });
 
+// ... after creating the user & verifyUrl
+try {
+  await sendMail({
+    to: user.email,
+    subject: 'Verify your email',
+    html: `<p>Welcome! Click to verify:</p><p><a href="${verifyUrl}">${verifyUrl}</a></p>`
+  });
+} catch (err) {
+  console.error('sendMail error:', err?.message || err);
+  // Do NOT throw; let the API still respond in dev.
+}
+
+return res.json({ ok: true, message: 'registered, verification email sent (or logged in dev)' });
+
+
 // Email verify link
 router.post('/verify-email', async (req, res) => {
   const { email, token } = req.body || {};
