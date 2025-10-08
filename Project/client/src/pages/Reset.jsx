@@ -1,19 +1,22 @@
-import { useSearchParams } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../api';
 
-export default function Reset(){
-  const [sp]=useSearchParams(); const token=sp.get('token')||'';
-  const [password,setPassword]=useState(''); const [msg,setMsg]=useState('');
-  return (
-    <div>
-      <h2>Set a new password</h2>
-      <input type="password" placeholder="New password" value={password} onChange={e=>setPassword(e.target.value)}/><br/>
-      <button onClick={async()=>{
-        try { await api('/api/auth/reset',{method:'POST',body:{token,password}}); setMsg('Password updated. You can log in now.'); }
-        catch(e){ setMsg(e.message); }
-      }}>Update</button>
-      <p>{msg}</p>
-    </div>
-  );
+export default function Reset() {
+  const [msg, setMsg] = useState('');
+  const [pwd, setPwd] = useState('');
+  const [email, setEmail] = useState(''); const [token, setToken] = useState('');
+  useEffect(() => {
+    const p = new URLSearchParams(location.search);
+    setEmail(p.get('email') || ''); setToken(p.get('token') || '');
+  }, []);
+  async function submit(e){ e.preventDefault();
+    try { await api('/auth/reset-password', { method:'POST', body:{ email, token, newPassword: pwd }});
+      setMsg('Password updated. You may log in.');
+    } catch(e){ setMsg(e.message); }
+  }
+  return (<form onSubmit={submit}>
+    <h2>Set new password</h2>
+    <input type="password" placeholder="New password" value={pwd} onChange={e=>setPwd(e.target.value)}/>
+    <button>Change</button><p>{msg}</p>
+  </form>);
 }

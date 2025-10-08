@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { api } from '../api';
 
-export default function Forgot(){
-  const [email,setEmail]=useState(''); const [msg,setMsg]=useState('');
+export default function Forgot() {
+  const [email, setEmail] = useState('');
+  const [msg, setMsg] = useState('');
+  async function submit(e) {
+    e.preventDefault();
+    try { await api('/auth/request-password-reset', { method:'POST', body:{ email } });
+      setMsg('If the email exists, a reset link has been sent.'); }
+    catch (e) { setMsg(e.message); }
+  }
   return (
-    <div>
+    <form onSubmit={submit}>
       <h2>Reset password</h2>
-      <input placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}/><br/>
-      <button onClick={async()=>{
-        try { await api('/api/auth/forgot',{method:'POST',body:{email}}); setMsg('If the email exists, we sent a reset link.'); }
-        catch(e){ setMsg(e.message); }
-      }}>Send reset link</button>
+      <input placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}/>
+      <button>Send link</button>
       <p>{msg}</p>
-    </div>
+    </form>
   );
 }

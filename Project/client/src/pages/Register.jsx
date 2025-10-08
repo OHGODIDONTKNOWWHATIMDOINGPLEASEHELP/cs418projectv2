@@ -1,20 +1,28 @@
 import { useState } from 'react';
 import { api } from '../api';
 
-export default function Register(){
-  const [form, setForm] = useState({ email:'', fullName:'', password:'' });
+export default function Register() {
+  const [form, setForm] = useState({ email:'', password:'', givenName:'', familyName:'' });
   const [msg, setMsg] = useState('');
+
+  async function submit(e) {
+    e.preventDefault();
+    setMsg('');
+    try {
+      await api('/auth/register', { method:'POST', body: form });
+      setMsg('Check your email for the verification link.');
+    } catch (e) { setMsg(e.message); }
+  }
+
   return (
-    <div>
-      <h2>Register</h2>
-      <input placeholder="Email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/><br/>
-      <input placeholder="Full name" value={form.fullName} onChange={e=>setForm(f=>({...f,fullName:e.target.value}))}/><br/>
-      <input placeholder="Password" type="password" value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))}/><br/>
-      <button onClick={async()=>{
-        try { await api('/api/auth/register',{method:'POST',body:form}); setMsg('Check your email to verify.'); }
-        catch(e){ setMsg(e.message); }
-      }}>Create account</button>
+    <form onSubmit={submit}>
+      <h2>Create account</h2>
+      <input placeholder="Email" value={form.email} onChange={e=>setForm({...form, email:e.target.value})}/>
+      <input placeholder="Password" type="password" value={form.password} onChange={e=>setForm({...form, password:e.target.value})}/>
+      <input placeholder="First name" value={form.givenName} onChange={e=>setForm({...form, givenName:e.target.value})}/>
+      <input placeholder="Last name" value={form.familyName} onChange={e=>setForm({...form, familyName:e.target.value})}/>
+      <button>Register</button>
       <p>{msg}</p>
-    </div>
+    </form>
   );
 }
