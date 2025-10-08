@@ -1,9 +1,10 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
+import { randomBytes } from 'node:crypto';
 import User from '../models/User.js';
 import { signJwt } from '../utils/jwt.js';
-import { sendMail } from '../utils/mailer.js';
+import { sendMail } from '../utils/mailer.js'; // <-- keep this
+
 
 const router = express.Router();
 const SALT = 12;
