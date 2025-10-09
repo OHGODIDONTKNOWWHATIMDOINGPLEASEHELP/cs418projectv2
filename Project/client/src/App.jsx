@@ -1,36 +1,47 @@
-import { Routes, Route, Link, NavLink } from 'react-router-dom';
+import { Routes, Route, Link, NavLink, Navigate } from 'react-router-dom';
+import { useAuth } from './AuthContext.jsx';
 import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
 import Verify from './pages/Verify.jsx';
 import TwoFA from './pages/TwoFA.jsx';
 import Forgot from './pages/Forgot.jsx';
 import Reset from './pages/Reset.jsx';
-import Me from './pages/Home.jsx';
+import Me from './pages/Profile.jsx';
 import Admin from './pages/Admin.jsx';
 
-function Home() {
-  return (
-    <div>
-      <h2>Welcome 👋</h2>
-      <p>Use the nav to Register or Login.</p>
-    </div>
-  );
+function RequireAuth({ children }) {
+  const { isAuthed } = useAuth();
+  return isAuthed ? children : <Navigate to="/login" replace />;
+}
+function RequireGuest({ children }) {
+  const { isAuthed } = useAuth();
+  return !isAuthed ? children : <Navigate to="/me" replace />;
 }
 
-function NotFound() {
-  return <h2>404 — Not Found</h2>;
-}
+function Home() { return <div><h2>Welcome 👋</h2></div>; }
 
 export default function App() {
+  const { isAuthed, profile, logout } = useAuth();
+
   return (
     <div className="app">
       <header className="nav">
         <h3><Link to="/">CS418</Link></h3>
         <nav className="links">
-          <NavLink to="/login">Login</NavLink>
-          <NavLink to="/register">Register</NavLink>
-          <NavLink to="/me">Home</NavLink>
-          <NavLink to="/admin">Admin</NavLink>
+          {!isAuthed && (
+            <>
+              <NavLink to="/login">Login</NavLink>
+              <NavLink to="/register">Register</NavLink>
+            </>
+          )}
+          {isAuthed && (
+            <>
+              <NavLink to="/Profile">My Profile</NavLink>
+              {profile?.roles?.includes('admin') && <NavLink to="/admin">Admin</NavLink>}
+              <button className="btn secondary" onClick={logout} type="button">Logout</button>
+            </>
+          )}
+          {/* Intentionally NO nav links for /verify, /2fa, /reset, /forgot */}
         </nav>
       </header>
 
@@ -38,15 +49,22 @@ export default function App() {
         <section className="panel fade-in">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
+
+            {/* Guests only */}
+            <Route path="/login" element={<RequireGuest><Login /></RequireGuest>} />
+            <Route path="/register" element={<RequireGuest><Register /></RequireGuest>} />
+
+            {/* Public utility routes (linked from emails) */}
             <Route path="/verify" element={<Verify />} />
             <Route path="/2fa" element={<TwoFA />} />
             <Route path="/forgot" element={<Forgot />} />
             <Route path="/reset" element={<Reset />} />
-            <Route path="/me" element={<Me />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="*" element={<NotFound />} />
+
+            {/* Auth-only */}
+            <Route path="/Profile" element={<RequireAuth><Me /></RequireAuth>} />
+            <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
+
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </section>
       </main>
