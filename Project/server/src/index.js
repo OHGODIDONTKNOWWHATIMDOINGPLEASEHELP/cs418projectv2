@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 
 import authRoutes from './routes/auth.js';
+import advisingRoutes from './routes/advising.js';
 import userRoutes from './routes/user.js';
 import adminRoutes from './routes/admin.js';
 
@@ -61,5 +62,7 @@ async function start() {
     process.exit(1);
   }
 }
+
+app.use('/api/advising', advisingRoutes);
 
 start();

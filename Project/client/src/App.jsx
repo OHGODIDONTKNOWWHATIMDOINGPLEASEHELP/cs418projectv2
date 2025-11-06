@@ -36,11 +36,12 @@ export default function App() {
           )}
           {isAuthed && (
             <>
-              <NavLink to="/Profile">My Profile</NavLink>
+              <NavLink to="/me">My Profile</NavLink>
+              <NavLink to="/advising">Course Advising</NavLink>
               {profile?.roles?.includes('admin') && <NavLink to="/admin">Admin</NavLink>}
               <button className="btn secondary" onClick={logout} type="button">Logout</button>
             </>
-          )}
+        )}
           {/* Intentionally NO nav links for /verify, /2fa, /reset, /forgot */}
         </nav>
       </header>
@@ -63,6 +64,9 @@ export default function App() {
             {/* Auth-only */}
             <Route path="/Profile" element={<RequireAuth><Me /></RequireAuth>} />
             <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
+            <Route path="/advising" element={<RequireAuth><AdvisingHistory /></RequireAuth>} />
+            <Route path="/advising/new" element={<RequireAuth><AdvisingForm /></RequireAuth>} />
+            <Route path="/advising/:id" element={<RequireAuth><AdvisingForm /></RequireAuth>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

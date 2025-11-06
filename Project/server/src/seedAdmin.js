@@ -3,28 +3,46 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import User from './models/User.js';
 
-const run = async () => {
-  const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/cs418projectv2';
-if (!mongoUri) {
-  console.error('Missing MONGO_URI for seed script');
-  process.exit(1);
-}
-await mongoose.connect(mongoUri);
+async function run() {
+  const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/cs418projectv2';
+  const email = (process.env.ADMIN_EMAIL || 'superadmin@ms1.com').toLowerCase();
+  const plain = process.env.ADMIN_PASSWORD || 'beans177';
 
-  await mongoose.connect(process.env.MONGO_URI);
-  const email = process.env.ADMIN_EMAIL?.toLowerCase();
-  if (!email) throw new Error('ADMIN_EMAIL not set');
-  let admin = await User.findOne({ email });
-  if (admin) {
-    console.log('Admin already exists:', email);
-  } else {
-    const passwordHash = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'ChangeMeNow123!', 12);
-    admin = await User.create({
-      email, passwordHash, isVerified: true, roles: ['admin', 'user'],
-      givenName: 'Admin', familyName: 'User'
-    });
-    console.log('Admin created:', email);
+  if (!email || !plain) {
+    console.error('ADMIN_EMAIL / ADMIN_PASSWORD missing in .env');
+    process.exit(1);
   }
+
+  await mongoose.connect(MONGO_URI);
+  const passwordHash = await bcrypt.hash(plain, 12);
+
+  let user = await User.findOne({ email });
+  if (user) {
+    // update existing user into a verified admin
+    user.passwordHash = passwordHash;
+    user.isVerified = true;
+    user.roles = Array.from(new Set([...(user.roles || []), 'admin', 'user']));
+    user.verifyToken = null;
+    user.verifyTokenExp = null;
+    await user.save();
+    console.log(`Updated admin: ${email}`);
+  } else {
+    // create fresh admin
+    user = await User.create({
+      email,
+      passwordHash,
+      isVerified: true,
+      roles: ['admin', 'user'],
+      givenName: 'Super',
+      familyName: 'Admin'
+    });
+    console.log(`Created admin: ${email}`);
+  }
+
+  console.log('Login password set to:', plain);
   await mongoose.disconnect();
-};
-run();
+}
+run().catch(err => {
+  console.error('seedAdmin error:', err);
+  process.exit(1);
+});
