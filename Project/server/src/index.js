@@ -6,71 +6,62 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
-import coursesRoutes from './routes/courses.js';
+
 import authRoutes from './routes/auth.js';
-import advisingRoutes from './routes/advising.js';
 import userRoutes from './routes/user.js';
 import adminRoutes from './routes/admin.js';
-app.use('/api/courses', coursesRoutes);
+import coursesRoutes from './routes/courses.js';
 
+const app = express(); // 👈 create the app FIRST
 
-// 1) CREATE THE APP FIRST — nothing uses `app` before this line
-const app = express();
-
-// 2) Middleware (safe to use `app` now)
-app.use(helmet());
-app.use(express.json());
-app.use(cookieParser());
-
+// --- middleware ---
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
-const ALLOWED_ORIGINS = [
+const allowedOrigins = [
   CLIENT_URL,
   'http://localhost:5173',
   'http://127.0.0.1:5173',
-  'https://cs418project.netlify.app',
+  'https://cs418project.netlify.app', // your Netlify
 ];
 
-app.use(cors({
-  origin(origin, cb) {
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-    return cb(new Error(`CORS: ${origin} not allowed`));
-  },
-  credentials: true
-}));
-app.options('*', cors({ origin: ALLOWED_ORIGINS, credentials: true }));
+app.use(helmet());
+app.use(express.json());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin(origin, cb) {
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error(`CORS: ${origin} not allowed`));
+    },
+    credentials: true,
+  })
+);
+app.use(rateLimit({ windowMs: 60_000, max: 120 }));
 
-app.use(rateLimit({
-  windowMs: 60_000,
-  max: 120,
-  skip: (req) => req.method === 'OPTIONS',
-  standardHeaders: true,
-  legacyHeaders: false,
-}));
-
-// 3) Health and routes
-app.get('/api/ping', (_req, res) => res.json({ pong: true }));
+// --- basic route ---
 app.get('/', (_req, res) => res.json({ ok: true }));
 
+// --- your routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/courses', coursesRoutes);
+app.use('/api/courses', coursesRoutes); // new courses route
+// app.use('/api/advising', advisingRoutes);  // if you have this too
 
-// 4) Start
-const PORT = process.env.PORT || 3001;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/cs418projectv2';
+// --- start server ---
+const MONGO_URI =
+  process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/cs418projectv2';
 
 async function start() {
   try {
     await mongoose.connect(MONGO_URI);
-    console.log('MongoDB connected');
-    app.listen(PORT, () => console.log(`API listening on :${PORT}`));
+    const port = process.env.PORT || 3001;
+    app.listen(port, () => {
+      console.log(`API listening on :${port}`);
+    });
   } catch (err) {
     console.error('Startup error:', err);
     process.exit(1);
   }
 }
-
-app.use('/api/advising', advisingRoutes);
 
 start();
