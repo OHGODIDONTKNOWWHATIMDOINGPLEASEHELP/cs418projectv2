@@ -8,7 +8,7 @@
     "start": "node src/index.js",
     "seed:admin": "node src/seedAdmin.js",
     "seed:courses": "node src/seedCourses.js",
-    "seed:users": "node src/seedUser.js"
+    "seed:user": "node src/seedUser.js"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
