@@ -1,33 +1,32 @@
-// Single source of truth for API calls
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-const API = import.meta.env.VITE_API_URL || 'https://cs418projectv2.onrender.com';
-
-
-// one-time log so you can confirm the base in the browser console
-if (!window.__apiBaseLogged) {
-  console.log('[API BASE]', API, 'from', window.location.origin);
-  window.__apiBaseLogged = true;
-}
-
-export async function api(path, { method = 'GET', body, token, headers } = {}) {
-  const res = await fetch(`${API}${path}`, {
+export async function api(path, { method='GET', body, token } = {}) {
+  const res = await fetch(API_BASE + path, {
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(headers || {})
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
     },
-    credentials: 'include',
-    body: body ? JSON.stringify(body) : undefined
+    body: body ? JSON.stringify(body) : undefined,
+  }).catch((e) => {
+    console.error('Network error calling', API_BASE + path, e);
+    throw e;
   });
 
-  // Try to parse JSON; tolerate empty bodies
-  let data = null;
-  try { data = await res.json(); } catch {}
+  const text = await res.text();
+  // try to parse JSON
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (e) {
+    console.error('Bad JSON from server:', text);
+    throw new Error('Server returned non-JSON response');
+  }
 
   if (!res.ok) {
-    const msg = (data && (data.error || data.message)) || `HTTP ${res.status}`;
-    throw new Error(msg);
+    console.error('API error', res.status, data);
+    throw new Error(data.error || `Request failed with ${res.status}`);
   }
-  return data ?? {};
+
+  return data;
 }
