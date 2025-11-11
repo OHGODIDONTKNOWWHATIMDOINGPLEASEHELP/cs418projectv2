@@ -4,41 +4,27 @@ import Advising from '../models/Advising.js';
 
 const router = express.Router();
 
-// helper to get user id from whatever the middleware put there
+// helper, in case you used it before
 function getUserId(req) {
   return req.user?.id || req.user?._id || req.user?.userId || null;
 }
 
-// GET /api/advising  – list this user's records
-router.get('/:id', requireAuth, async (req, res) => {
+// GET /api/advising  ← notice: just '/'
+router.get('/', requireAuth, async (req, res) => {
   try {
-    const userId = getUserId(req); // your helper
-    const { id } = req.params;
-
-    // if no id or obviously not an ObjectId, bail early
-    if (!id || id === 'undefined' || id.length < 12) {
-      return res.status(400).json({ error: 'invalid id' });
-    }
-
-    const doc = await Advising.findOne({ _id: id, user: userId });
-    if (!doc) return res.status(404).json({ error: 'not found' });
-
-    res.json({ ok: true, record: doc });
+    const userId = getUserId(req);
+    const records = await Advising.find({ user: userId }).sort({ createdAt: -1 });
+    res.json({ ok: true, records });
   } catch (err) {
-    console.error('GET /api/advising/:id error:', err);
+    console.error('GET /api/advising error:', err);
     res.status(500).json({ error: 'server error' });
   }
 });
 
-// POST /api/advising – create new record
+// POST /api/advising
 router.post('/', requireAuth, async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) {
-      console.error('POST /api/advising: no user id on req.user', req.user);
-      return res.status(401).json({ error: 'unauthorized' });
-    }
-
     const {
       lastTerm = '',
       lastGpa = '',
@@ -66,39 +52,16 @@ router.post('/', requireAuth, async (req, res) => {
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: 'unauthorized' });
+    const { id } = req.params;
+    if (!id || id === 'undefined' || id.length < 12) {
+      return res.status(400).json({ error: 'invalid id' });
+    }
 
-    const doc = await Advising.findOne({ _id: req.params.id, user: userId });
+    const doc = await Advising.findOne({ _id: id, user: userId });
     if (!doc) return res.status(404).json({ error: 'not found' });
     res.json({ ok: true, record: doc });
   } catch (err) {
     console.error('GET /api/advising/:id error:', err);
-    res.status(500).json({ error: 'server error' });
-  }
-});
-
-// PUT /api/advising/:id
-router.put('/:id', requireAuth, async (req, res) => {
-  try {
-    const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: 'unauthorized' });
-
-    const doc = await Advising.findOne({ _id: req.params.id, user: userId });
-    if (!doc) return res.status(404).json({ error: 'not found' });
-    if (doc.status !== 'Pending') {
-      return res.status(400).json({ error: 'record not editable' });
-    }
-
-    const { lastTerm, lastGpa, currentTerm, courses } = req.body || {};
-    if (lastTerm !== undefined) doc.lastTerm = lastTerm;
-    if (lastGpa !== undefined) doc.lastGpa = lastGpa;
-    if (currentTerm !== undefined) doc.currentTerm = currentTerm;
-    if (courses !== undefined) doc.courses = courses;
-
-    await doc.save();
-    res.json({ ok: true, record: doc });
-  } catch (err) {
-    console.error('PUT /api/advising/:id error:', err);
     res.status(500).json({ error: 'server error' });
   }
 });
