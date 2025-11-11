@@ -26,7 +26,7 @@ const ALLOWED_ORIGINS = [CLIENT_URL, 'http://localhost:5173', 'http://127.0.0.1:
 app.use(cors({
   origin(origin, cb) {
     if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-    return cb(new Error(`CORS blocked: ${origin}`));
+    return cb(new Error(`CORS: ${origin} not allowed`));
   },
   credentials: true,
 }));
