@@ -1,8 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 export async function api(path, { method = 'GET', body } = {}) {
-  // try to grab token from localStorage (that your AuthContext saved)
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token'); // 👈 we will save this after 2FA
 
   const res = await fetch(API_BASE + path, {
     method,
@@ -16,7 +15,7 @@ export async function api(path, { method = 'GET', body } = {}) {
   const text = await res.text();
   const data = text ? JSON.parse(text) : {};
 
-   if (!res.ok) {
+  if (!res.ok) {
     throw new Error(data.error || `Request failed with ${res.status}`);
   }
   return data;

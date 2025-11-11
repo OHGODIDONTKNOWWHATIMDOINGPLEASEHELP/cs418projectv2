@@ -1,18 +1,24 @@
+// Project/server/src/middleware/auth.js
 import { verifyJwt } from '../utils/jwt.js';
 
 export function requireAuth(req, res, next) {
-  const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
-  if (!token) return res.status(401).json({ error: 'missing token' });
-  try {
-    req.user = verifyJwt(token);
-    return next();
-  } catch {
-    return res.status(401).json({ error: 'invalid token' });
+  const auth = req.headers.authorization || '';
+  if (!auth.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'unauthorized' });
   }
-}
 
-export function requireAdmin(req, res, next) {
-  if (!req.user?.roles?.includes('admin')) return res.status(403).json({ error: 'admin only' });
-  next();
+  const token = auth.slice(7);
+  try {
+    const payload = verifyJwt(token);
+    // normalize so routes can do req.user.id
+    req.user = {
+      id: payload.uid,
+      roles: payload.roles || [],
+      email: payload.email,
+    };
+    return next();
+  } catch (err) {
+    console.error('requireAuth error:', err.message);
+    return res.status(401).json({ error: 'unauthorized' });
+  }
 }

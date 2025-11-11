@@ -1,18 +1,16 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// src/pages/TwoFA.jsx
 import { api } from '../api';
-import { useAuth } from '../AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export default function TwoFA() {
   const [code, setCode] = useState('');
   const [msg, setMsg] = useState('');
   const nav = useNavigate();
-  const { login } = useAuth();
 
   async function submit(e) {
     e.preventDefault();
     setMsg('');
-
     try {
       const tempToken = sessionStorage.getItem('tempToken');
       const userId = sessionStorage.getItem('userId');
@@ -22,9 +20,11 @@ export default function TwoFA() {
         body: { code, tempToken, userId },
       });
 
-      // 👇 THIS is the important part
-      login(token, user);                   // goes into context
-      localStorage.setItem('token', token); // so api.js can read it
+      // 👇 THIS is what advising will later use
+      localStorage.setItem('token', token);
+
+      // optional: store user too
+      localStorage.setItem('user', JSON.stringify(user));
 
       nav('/advising');
     } catch (err) {
@@ -34,15 +34,9 @@ export default function TwoFA() {
 
   return (
     <form onSubmit={submit}>
-      <h2>Enter 2FA code</h2>
-      <input
-        className="input"
-        value={code}
-        onChange={e => setCode(e.target.value)}
-        required
-      />
-      <button className="btn" type="submit">Verify</button>
-      {msg && <p className="alert error">{msg}</p>}
+      <input value={code} onChange={e => setCode(e.target.value)} />
+      <button>Verify</button>
+      {msg && <p>{msg}</p>}
     </form>
   );
 }
