@@ -1,42 +1,24 @@
 import nodemailer from 'nodemailer';
 
-function makeDevTransport() {
-  // Fallback that just logs emails to the console
-  return {
-    async sendMail(opts) {
-      console.log('[DEV EMAIL]', {
-        to: opts.to,
-        subject: opts.subject,
-        html: opts.html,
-        text: opts.text,
-      });
-      return { messageId: 'dev' };
-    },
-  };
-}
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT || 587),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
-let transporter;
-
-if (
-  process.env.SMTP_HOST &&
-  process.env.SMTP_PORT &&
-  process.env.SMTP_USER &&
-  process.env.SMTP_PASS
-) {
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: Number(process.env.SMTP_PORT) === 465, // TLS on 465
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+export async function sendMail({ to, subject, html }) {
+  const info = await transporter.sendMail({
+    from: process.env.FROM_EMAIL || 'noreply@example.com',
+    to,
+    subject,
+    html,
   });
-} else {
-  // No SMTP config → use dev logger
-  transporter = makeDevTransport();
-}
-
-export async function sendMail({ to, subject, html, text }) {
-  return transporter.sendMail({
-    from: process.env.FROM_EMAIL || 'CS418 <noreply@example.com>',
-    to, subject, html, text,
-  });
+  // optional: log preview url for ethereal
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Mail sent:', nodemailer.getTestMessageUrl(info));
+  }
 }

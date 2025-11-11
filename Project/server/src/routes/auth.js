@@ -85,11 +85,13 @@ router.post('/login', async (req, res) => {
     if (!ok) return res.status(401).json({ error: 'invalid credentials' });
     if (!user.isVerified) return res.status(403).json({ error: 'email not verified' });
 
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    user.twofa = user.twofa || {};
-    user.twofa.pendingCode = code;
-    user.twofa.pendingCodeExp = new Date(Date.now() + CODE_TTL_MS);
-    await user.save();
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+user.twofa = {
+  pendingCode: code,
+  pendingCodeExp: new Date(Date.now() + 10 * 60 * 1000),
+};
+await user.save();
+
 
     try {
       await sendMail({
@@ -99,6 +101,13 @@ router.post('/login', async (req, res) => {
       });
     } catch (e) {
       console.error('sendMail(login) error:', e?.message || e);
+      if (process.env.NODE_ENV !== 'production') {
+  console.log('2FA code for', user.email, code);
+} else {
+  // on render we still want to see it in logs while testing
+  console.log('2FA (prod) for', user.email, code);
+}
+
     }
 
     const tempToken = signJwt({ uid: user.id, step: '2fa' }, { expiresIn: '10m' });
