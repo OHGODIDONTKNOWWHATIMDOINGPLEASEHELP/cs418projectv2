@@ -231,3 +231,60 @@ table tr:first-child td:last-child  { border-top-right-radius: 14px; }
 /* ---------- Animations ---------- */
 .fade-in { animation: fade .25s ease-out both; }
 @keyframes fade { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: none; } }
+
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f172a; /* dark slate */
+}
+
+.auth-card {
+  background: #ffffff;
+  padding: 2.5rem 2.75rem;
+  border-radius: 1.25rem;
+  width: min(420px, 100%);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.auth-card h2 {
+  margin-bottom: 0.25rem;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+}
+
+.btn {
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn.primary {
+  background: #2563eb;
+  color: white;
+}
+
+.alert.error {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.muted {
+  color: #64748b;
+  font-size: 0.8rem;
+}
