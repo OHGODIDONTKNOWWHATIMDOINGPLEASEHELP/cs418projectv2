@@ -10,6 +10,7 @@ import Home from './pages/Home.jsx';
 import Admin from './pages/Admin.jsx';
 import AdvisingHistory from './pages/AdvisingHistory.jsx';
 import AdvisingForm from './pages/AdvisingForm.jsx';
+import AdminAdvising from './pages/AdminAdvising.jsx';
 
 function RequireAuth({ children }) {
   const { isAuthed } = useAuth();
@@ -66,6 +67,7 @@ export default function App() {
             <Route path="/advising/new" element={<RequireAuth><AdvisingForm /></RequireAuth>} />
             <Route path="/advising/:id" element={<RequireAuth><AdvisingForm /></RequireAuth>} />
             <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
+            <Route path="/admin/advising" element={<RequireAuth><AdminAdvising /></RequireAuth>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

@@ -39,7 +39,11 @@ router.post('/', requireAuth, async (req, res) => {
       currentTerm,
       courses,
       lastTermCourses,
-      status: 'Pending',
+      status: {
+  type: String,
+  enum: ['Pending', 'Approved', 'Rejected'],
+  default: 'Pending',
+},
     });
 
     res.json({ ok: true, record: doc });

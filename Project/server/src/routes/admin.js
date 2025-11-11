@@ -1,13 +1,37 @@
 import express from 'express';
-import User from '../models/User.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
+import Advising from '../models/Advising.js';
 
 const router = express.Router();
 
-// 12/13 Admin-only endpoints + distinct view on frontend
-router.get('/users', requireAuth, requireAdmin, async (_req, res) => {
-  const users = await User.find().select('email givenName familyName roles isVerified createdAt').lean();
-  res.json({ users });
+// ...your other admin routes...
+
+// list all advising submissions (for admin)
+router.get('/advising', requireAuth, requireAdmin, async (req, res) => {
+  const records = await Advising.find({}).populate('user', 'email').sort({ createdAt: -1 });
+  res.json({ ok: true, records });
+});
+
+// approve
+router.patch('/advising/:id/approve', requireAuth, requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const doc = await Advising.findById(id);
+  if (!doc) return res.status(404).json({ error: 'not found' });
+
+  doc.status = 'Approved';
+  await doc.save();
+  res.json({ ok: true, record: doc });
+});
+
+// reject
+router.patch('/advising/:id/reject', requireAuth, requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const doc = await Advising.findById(id);
+  if (!doc) return res.status(404).json({ error: 'not found' });
+
+  doc.status = 'Rejected';
+  await doc.save();
+  res.json({ ok: true, record: doc });
 });
 
 export default router;
