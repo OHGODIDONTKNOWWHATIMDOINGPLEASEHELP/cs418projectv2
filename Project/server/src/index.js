@@ -1,4 +1,3 @@
-// Project/server/src/index.js
 import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
@@ -13,17 +12,17 @@ import adminRoutes from './routes/admin.js';
 import coursesRoutes from './routes/courses.js';
 import advisingRoutes from './routes/advising.js';
 
-const app = express(); // 👈 create the app FIRST
+const app = express();
 
-// --- middleware ---
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 const allowedOrigins = [
   CLIENT_URL,
   'http://localhost:5173',
   'http://127.0.0.1:5173',
-  'https://cs418project.netlify.app', // your Netlify
+  'https://cs418project.netlify.app',
 ];
 
+// global middleware
 app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
@@ -34,22 +33,23 @@ app.use(
       return cb(new Error(`CORS: ${origin} not allowed`));
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
+app.options('*', cors());
 app.use(rateLimit({ windowMs: 60_000, max: 120 }));
 
-// --- basic route ---
+// test route
 app.get('/', (_req, res) => res.json({ ok: true }));
 
-// --- your routes ---
+// real routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/courses', coursesRoutes); // new courses route
+app.use('/api/courses', coursesRoutes);
 app.use('/api/advising', advisingRoutes);
-// app.use('/api/advising', advisingRoutes);  // if you have this too
 
-// --- start server ---
 const MONGO_URI =
   process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/cs418projectv2';
 
@@ -65,20 +65,5 @@ async function start() {
     process.exit(1);
   }
 }
-
-app.use(
-  cors({
-    origin(origin, cb) {
-      if (!origin) return cb(null, true);
-      if (allowedOrigins.includes(origin)) return cb(null, true);
-      return cb(new Error(`CORS: ${origin} not allowed`));
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
-
-app.options('*', cors()); 
 
 start();
