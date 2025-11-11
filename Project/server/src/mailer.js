@@ -11,6 +11,7 @@ if (mjPublic && mjPrivate) {
 }
 
 export async function sendMail({ to, subject, html }) {
+  // if we have no client, just log and return
   if (!mailjetClient) {
     console.error('sendMail: Mailjet client not initialized');
     return;
@@ -25,22 +26,16 @@ export async function sendMail({ to, subject, html }) {
       .request({
         Messages: [
           {
-            From: {
-              Email: fromEmail,
-              Name: fromName,
-            },
-            To: [
-              {
-                Email: to,
-              },
-            ],
+            From: { Email: fromEmail, Name: fromName },
+            To: [{ Email: to }],
             Subject: subject,
             HTMLPart: html,
           },
         ],
       });
   } catch (err) {
-    // log what Mailjet says
-    console.error('sendMail(Mailjet) error:', err?.response?.data || err.message || err);
+    // THIS is the line you saw
+    console.error('sendMail(register) error:', err?.message || err);
+    // DO NOT throw – we want the route to keep going
   }
 }
