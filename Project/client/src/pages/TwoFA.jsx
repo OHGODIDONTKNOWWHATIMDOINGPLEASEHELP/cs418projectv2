@@ -1,33 +1,46 @@
-// src/pages/TwoFA.jsx
-import { api } from '../api';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { api } from '../api';
+import { useAuth } from '../AuthContext.jsx'; // 👈 THIS was missing
 
 export default function TwoFA() {
   const [code, setCode] = useState('');
   const [msg, setMsg] = useState('');
+  const [email, setEmail] = useState('');
   const nav = useNavigate();
+  const { login } = useAuth();              // 👈 now it's defined
+
+  useEffect(() => {
+    const e = sessionStorage.getItem('loginEmail');
+    if (e) setEmail(e);
+  }, []);
 
   async function submit(e) {
     e.preventDefault();
     setMsg('');
-    try {
-      const tempToken = sessionStorage.getItem('tempToken');
-      const userId = sessionStorage.getItem('userId');
 
+    const tempToken = sessionStorage.getItem('tempToken');
+    const userId = sessionStorage.getItem('userId');
+
+    if (!tempToken || !userId) {
+      setMsg('Session expired, please log in again.');
+      return nav('/login');
+    }
+
+    try {
       const { token, user } = await api('/auth/verify-2fa', {
         method: 'POST',
         body: { code, tempToken, userId },
       });
-      const { login } = useAuth();
-login(token, user);
 
-
-      // 👇 THIS is what advising will later use
+      // update global auth AND persist token
+      login(token, user);
       localStorage.setItem('token', token);
 
-      // optional: store user too
-      localStorage.setItem('user', JSON.stringify(user));
+      // clean up temp values
+      sessionStorage.removeItem('tempToken');
+      sessionStorage.removeItem('userId');
+      sessionStorage.removeItem('loginEmail');
 
       nav('/advising');
     } catch (err) {
@@ -36,10 +49,26 @@ login(token, user);
   }
 
   return (
-    <form onSubmit={submit}>
-      <input value={code} onChange={e => setCode(e.target.value)} />
-      <button>Verify</button>
-      {msg && <p>{msg}</p>}
-    </form>
+    <div className="auth-shell">
+      <form className="auth-card" onSubmit={submit}>
+        <h2>Two-Factor</h2>
+        {email && <p className="muted">Code sent to: {email}</p>}
+
+        <label>Enter 6-digit code</label>
+        <input
+          className="input"
+          value={code}
+          onChange={e => setCode(e.target.value)}
+          maxLength={6}
+          required
+        />
+
+        <button className="btn primary" type="submit">
+          Verify
+        </button>
+
+        {msg && <p className="alert error">{msg}</p>}
+      </form>
+    </div>
   );
 }
