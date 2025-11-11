@@ -31,36 +31,44 @@ export default function App() {
   return (
     <>
       <nav className="topbar">
-        <div className="left">
-          <Link to="/">Home</Link>
+  <div className="left">
+    <Link to="/">Home</Link>
 
-          {!isAdmin && isAuthed && (
-            <>
-              <Link to="/advising">Advising</Link>
-              <Link to="/advising/history">History</Link>
-            </>
-          )}
+    {/* student menu */}
+    {isAuthed && !isAdmin && (
+      <>
+        <Link to="/advising">Advising</Link>
+        <Link to="/advising/history">History</Link>
+      </>
+    )}
 
-          {isAdmin && (
-            <Link to="/admin/advising">Admin Advising</Link>
-          )}
-        </div>
+    {/* admin menu */}
+    {isAuthed && isAdmin && (
+      <Link to="/admin/advising">Admin Advising</Link>
+    )}
+  </div>
 
-        <div className="right">
-          {isAuthed ? (
-            <button onClick={logout} className="btn link">
-              Logout
-            </button>
-          ) : (
-            <Link to="/login">Login</Link>
-          )}
-        </div>
-      </nav>
+  <div className="right">
+    {isAuthed ? (
+      <button onClick={logout} className="btn link">
+        Logout
+      </button>
+    ) : (
+      <>
+        <Link to="/login">Login</Link>
+        <Link to="/register">Register</Link>
+      </>
+    )}
+  </div>
+</nav>
+
 
       <Routes>
         {/* public-ish */}
         <Route path="/login" element={isAuthed ? <Navigate to="/" /> : <Login />} />
         <Route path="/2fa" element={<TwoFA />} />
+        <Route path="/register" element={isAuthed ? <Navigate to="/" /> : <Register />} />
+        <Route path="/forgot" element={isAuthed ? <Navigate to="/" /> : <Forgot />} />
 
         {/* student-only advising */}
         <Route
@@ -80,6 +88,16 @@ export default function App() {
           element={
             isAuthed && !isAdmin ? <AdvisingHistory /> : <Navigate to="/" />
           }
+        />
+        <Route
+          path="/home"
+          element={
+            isAuthed && !isAdmin ? <Home /> : <Navigate to="/" />
+          }
+        />
+        <Route
+          path="/reset"
+          element={isAuthed ? <Navigate to="/" /> : <Reset />}
         />
 
         {/* admin-only advising list */}
