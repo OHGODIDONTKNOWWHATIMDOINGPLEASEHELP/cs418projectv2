@@ -6,7 +6,8 @@
     "db:push": "prisma db push",
     "db:seed": "node -r dotenv/config src/db.js seed",
     "start": "node src/index.js",
-    "seed:admin": "node src/seedAdmin.js"
+    "seed:admin": "node src/seedAdmin.js",
+    "seed:courses": "node src/seedCourses.js"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",

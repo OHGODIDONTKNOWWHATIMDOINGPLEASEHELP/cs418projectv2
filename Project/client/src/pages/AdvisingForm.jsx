@@ -3,12 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api';
 
 const LEVEL_OPTIONS = ['100', '200', '300', '400', 'Graduate'];
-const COURSE_OPTIONS = ['CS418', 'CS440', 'CS450', 'CS475']; // you can fetch from backend later
 
 export default function AdvisingForm() {
   const { id } = useParams(); // undefined when /advising/new
   const nav = useNavigate();
 
+  const [courseOptions, setCourseOptions] = useState([]);
   const [lastTerm, setLastTerm] = useState('');
   const [lastGpa, setLastGpa] = useState('');
   const [currentTerm, setCurrentTerm] = useState('');
@@ -21,6 +21,9 @@ export default function AdvisingForm() {
 
   // load existing record if editing
   useEffect(() => {
+    api('/courses')
+      .then(({ courses }) => setCourseOptions(courses || []))
+      .catch(() => setCourseOptions([]));
     if (!isEdit) return;
     api(`/advising/${id}`)
       .then(({ record }) => {
@@ -105,17 +108,26 @@ export default function AdvisingForm() {
             </select>
           </div>
           <div>
-            <label>Course Name</label>
-            <select className="input" value={row.courseName} disabled={isFrozen}
-                    onChange={e => updateCourse(idx, 'courseName', e.target.value)}>
-              <option value="">-- choose --</option>
-              {COURSE_OPTIONS.map(opt => (
-                <option key={opt} value={opt} disabled={lastTermCourses.includes(opt)}>
-                  {opt} {lastTermCourses.includes(opt) ? '(taken last term)' : ''}
-                </option>
-              ))}
-            </select>
-          </div>
+  <label>Course Name</label>
+  <select
+    className="input"
+    value={row.courseName}
+    disabled={isFrozen}
+    onChange={e => updateCourse(idx, 'courseName', e.target.value)}
+  >
+    <option value="">-- choose --</option>
+    {courseOptions.map(c => (
+      <option
+        key={c.code}
+        value={c.code}
+        disabled={lastTermCourses.includes(c.code)}
+      >
+        {c.code} — {c.title}
+      </option>
+    ))}
+  </select>
+</div>
+
           {!isFrozen && courses.length > 1 && (
             <button type="button" className="btn secondary" onClick={() => removeRow(idx)}>Remove</button>
           )}
