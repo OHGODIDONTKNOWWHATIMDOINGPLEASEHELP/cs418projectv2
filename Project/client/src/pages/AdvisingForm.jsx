@@ -28,7 +28,7 @@ export default function AdvisingForm() {
 
   // load existing record if editing
   useEffect(() => {
-    if (!isEdit) return;
+    if (!id) return;
     api(`/advising/${id}`)
       .then(({ record }) => {
         setLastTerm(record.lastTerm);
@@ -39,7 +39,7 @@ export default function AdvisingForm() {
         // if we tracked lastTermCourses in record, set it; else derive from lastTerm
         setLastTermCourses(record.courses.map(c => c.courseName)); // simplest
       })
-      .catch(e => setMsg(e.message));
+      .catch(console.error);
   }, [id, isEdit]);
 
   function updateCourse(idx, key, value) {

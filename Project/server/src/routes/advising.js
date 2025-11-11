@@ -10,18 +10,22 @@ function getUserId(req) {
 }
 
 // GET /api/advising  – list this user's records
-router.get('/', requireAuth, async (req, res) => {
+router.get('/:id', requireAuth, async (req, res) => {
   try {
-    const userId = getUserId(req);
-    if (!userId) {
-      console.error('GET /api/advising: no user id on req.user', req.user);
-      return res.status(401).json({ error: 'unauthorized' });
+    const userId = getUserId(req); // your helper
+    const { id } = req.params;
+
+    // if no id or obviously not an ObjectId, bail early
+    if (!id || id === 'undefined' || id.length < 12) {
+      return res.status(400).json({ error: 'invalid id' });
     }
 
-    const records = await Advising.find({ user: userId }).sort({ createdAt: -1 });
-    res.json({ ok: true, records });
+    const doc = await Advising.findOne({ _id: id, user: userId });
+    if (!doc) return res.status(404).json({ error: 'not found' });
+
+    res.json({ ok: true, record: doc });
   } catch (err) {
-    console.error('GET /api/advising error:', err);
+    console.error('GET /api/advising/:id error:', err);
     res.status(500).json({ error: 'server error' });
   }
 });
