@@ -1,24 +1,25 @@
 import { Routes, Route, Link, NavLink, Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext.jsx';
-import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
 import Verify from './pages/Verify.jsx';
 import TwoFA from './pages/TwoFA.jsx';
 import Forgot from './pages/Forgot.jsx';
 import Reset from './pages/Reset.jsx';
-import Me from './pages/Profile.jsx';
+import Home from './pages/Home.jsx';
 import Admin from './pages/Admin.jsx';
+import AdvisingHistory from './pages/AdvisingHistory.jsx';
+import AdvisingForm from './pages/AdvisingForm.jsx';
 
 function RequireAuth({ children }) {
   const { isAuthed } = useAuth();
   return isAuthed ? children : <Navigate to="/login" replace />;
 }
+
 function RequireGuest({ children }) {
   const { isAuthed } = useAuth();
   return !isAuthed ? children : <Navigate to="/me" replace />;
 }
-
-function Home() { return <div><h2>Welcome 👋</h2></div>; }
 
 export default function App() {
   const { isAuthed, profile, logout } = useAuth();
@@ -26,7 +27,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="nav">
-        <h3><Link to="/">CS418</Link></h3>
+        <h3><Link to="/" style={{ color: '#fff', textDecoration: 'none' }}>CS418</Link></h3>
         <nav className="links">
           {!isAuthed && (
             <>
@@ -34,39 +35,37 @@ export default function App() {
               <NavLink to="/register">Register</NavLink>
             </>
           )}
+
           {isAuthed && (
             <>
-              <NavLink to="/me">My Profile</NavLink>
-              <NavLink to="/advising">Course Advising</NavLink>
+              <NavLink to="/me">My Home</NavLink>
+              <NavLink to="/advising">Advising</NavLink>
               {profile?.roles?.includes('admin') && <NavLink to="/admin">Admin</NavLink>}
-              <button className="btn secondary" onClick={logout} type="button">Logout</button>
+              <button className="btn-link" onClick={logout} type="button">Logout</button>
             </>
-        )}
-          {/* Intentionally NO nav links for /verify, /2fa, /reset, /forgot */}
+          )}
         </nav>
       </header>
 
       <main className="container">
-        <section className="panel fade-in">
+        <section className="panel">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<div>Welcome</div>} />
 
-            {/* Guests only */}
+            {/* guests only */}
             <Route path="/login" element={<RequireGuest><Login /></RequireGuest>} />
             <Route path="/register" element={<RequireGuest><Register /></RequireGuest>} />
-
-            {/* Public utility routes (linked from emails) */}
+            <Route path="/forgot" element={<RequireGuest><Forgot /></RequireGuest>} />
+            <Route path="/reset" element={<Reset />} />
             <Route path="/verify" element={<Verify />} />
             <Route path="/2fa" element={<TwoFA />} />
-            <Route path="/forgot" element={<Forgot />} />
-            <Route path="/reset" element={<Reset />} />
 
-            {/* Auth-only */}
-            <Route path="/Profile" element={<RequireAuth><Me /></RequireAuth>} />
-            <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
+            {/* logged in */}
+            <Route path="/me" element={<RequireAuth><Home /></RequireAuth>} />
             <Route path="/advising" element={<RequireAuth><AdvisingHistory /></RequireAuth>} />
             <Route path="/advising/new" element={<RequireAuth><AdvisingForm /></RequireAuth>} />
             <Route path="/advising/:id" element={<RequireAuth><AdvisingForm /></RequireAuth>} />
+            <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

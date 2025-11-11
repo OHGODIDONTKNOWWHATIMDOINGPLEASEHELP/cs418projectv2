@@ -4,37 +4,37 @@ import { api } from '../api';
 export default function Forgot() {
   const [email, setEmail] = useState('');
   const [msg, setMsg] = useState('');
+
   async function submit(e) {
     e.preventDefault();
-    try { await api('/auth/request-password-reset', { method:'POST', body:{ email } });
-      setMsg('If the email exists, a reset link has been sent.'); }
-    catch (e) { setMsg(e.message); }
+    setMsg('');
+    try {
+      await api('/auth/request-password-reset', {
+        method: 'POST',
+        body: { email }
+      });
+      setMsg('If that email is registered, a reset link was sent.');
+    } catch (err) {
+      setMsg(err.message);
+    }
   }
-
-  <div className="app">
-  <header className="nav">
-    <h3>CS418</h3>
-    <nav className="links">
-      <a href="/login">Login</a>
-      <a href="/register">Register</a>
-      <a href="/me">Home</a>
-      <a href="/admin">Admin</a>
-    </nav>
-  </header>
-
-  <main className="container">
-    <section className="panel fade-in">
-      {/* page-specific content here */}
-    </section>
-  </main>
-</div>
 
   return (
     <form onSubmit={submit}>
-      <h2>Reset password</h2>
-      <input placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}/>
-      <button>Send link</button>
-      <p>{msg}</p>
+      <h2>Forgot Password</h2>
+      <p>Enter your email and we’ll send a reset link.</p>
+      <label>Email</label>
+      <input
+        className="input"
+        type="email"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        required
+      />
+      <div className="actions">
+        <button className="btn" type="submit">Send reset link</button>
+      </div>
+      {msg && <p className="alert">{msg}</p>}
     </form>
   );
 }
