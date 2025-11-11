@@ -4,12 +4,11 @@ import Advising from '../models/Advising.js';
 
 const router = express.Router();
 
-// helper, in case you used it before
 function getUserId(req) {
   return req.user?.id || req.user?._id || req.user?.userId || null;
 }
 
-// GET /api/advising  ← notice: just '/'
+// list
 router.get('/', requireAuth, async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -21,7 +20,7 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/advising
+// create
 router.post('/', requireAuth, async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -30,6 +29,7 @@ router.post('/', requireAuth, async (req, res) => {
       lastGpa = '',
       currentTerm = '',
       courses = [],
+      lastTermCourses = [],
     } = req.body || {};
 
     const doc = await Advising.create({
@@ -38,6 +38,7 @@ router.post('/', requireAuth, async (req, res) => {
       lastGpa,
       currentTerm,
       courses,
+      lastTermCourses,
       status: 'Pending',
     });
 
@@ -48,7 +49,7 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/advising/:id
+// load one
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -62,6 +63,45 @@ router.get('/:id', requireAuth, async (req, res) => {
     res.json({ ok: true, record: doc });
   } catch (err) {
     console.error('GET /api/advising/:id error:', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// ✅ update one
+router.put('/:id', requireAuth, async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+    if (!id || id === 'undefined' || id.length < 12) {
+      return res.status(400).json({ error: 'invalid id' });
+    }
+
+    const doc = await Advising.findOne({ _id: id, user: userId });
+    if (!doc) return res.status(404).json({ error: 'not found' });
+
+    // if approved/rejected, freeze
+    if (doc.status && doc.status !== 'Pending') {
+      return res.status(400).json({ error: 'record not editable' });
+    }
+
+    const {
+      lastTerm,
+      lastGpa,
+      currentTerm,
+      courses,
+      lastTermCourses,
+    } = req.body || {};
+
+    if (lastTerm !== undefined) doc.lastTerm = lastTerm;
+    if (lastGpa !== undefined) doc.lastGpa = lastGpa;
+    if (currentTerm !== undefined) doc.currentTerm = currentTerm;
+    if (courses !== undefined) doc.courses = courses;
+    if (lastTermCourses !== undefined) doc.lastTermCourses = lastTermCourses;
+
+    await doc.save();
+    res.json({ ok: true, record: doc });
+  } catch (err) {
+    console.error('PUT /api/advising/:id error:', err);
     res.status(500).json({ error: 'server error' });
   }
 });
