@@ -50,6 +50,18 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // load one
+// GET /api/advising/history -> same as list
+router.get('/history', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id || req.user._id;
+    const records = await Advising.find({ user: userId }).sort({ createdAt: -1 });
+    res.json({ ok: true, records });
+  } catch (err) {
+    console.error('GET /api/advising/history error:', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+``
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const userId = getUserId(req);
