@@ -11,6 +11,7 @@ import authRoutes from './routes/auth.js';
 import userRoutes from './routes/user.js';
 import adminRoutes from './routes/admin.js';
 import coursesRoutes from './routes/courses.js';
+import advisingRoutes from './routes/advising.js';
 
 const app = express(); // 👈 create the app FIRST
 
@@ -45,6 +46,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/courses', coursesRoutes); // new courses route
+app.use('/api/advising', advisingRoutes);
 // app.use('/api/advising', advisingRoutes);  // if you have this too
 
 // --- start server ---
