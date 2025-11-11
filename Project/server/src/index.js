@@ -11,7 +11,6 @@ import authRoutes from './routes/auth.js';
 import advisingRoutes from './routes/advising.js';
 import userRoutes from './routes/user.js';
 import adminRoutes from './routes/admin.js';
-import coursesRoutes from './routes/courses.js';
 app.use('/api/courses', coursesRoutes);
 
 
