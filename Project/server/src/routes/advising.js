@@ -72,12 +72,14 @@ router.get('/:id', requireAuth, async (req, res) => {
 
     const doc = await Advising.findOne({ _id: id, user: userId });
     if (!doc) return res.status(404).json({ error: 'not found' });
-    res.json({ ok: true, record: doc });
+
+    res.json({ ok: true, record: doc }); // 👈 important
   } catch (err) {
     console.error('GET /api/advising/:id error:', err);
     res.status(500).json({ error: 'server error' });
   }
 });
+
 
 // ✅ update one
 router.put('/:id', requireAuth, async (req, res) => {

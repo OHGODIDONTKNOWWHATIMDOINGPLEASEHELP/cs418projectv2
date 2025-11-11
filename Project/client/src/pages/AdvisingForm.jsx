@@ -22,21 +22,27 @@ export default function AdvisingForm() {
 
   // if editing, load that advising record
   useEffect(() => {
-    if (!id) return;
-    api(`/advising/${id}`)
-      .then(({ record }) => {
-        setLastTerm(record.lastTerm || '');
-        setLastGpa(record.lastGpa || '');
-        setCurrentTerm(record.currentTerm || '');
-        setLastTermCourses(record.lastTermCourses || []);
-        setRows(record.courses && record.courses.length ? record.courses : [{ level: '', courseName: '' }]);
-        // 👇 freeze if not pending
-        setFrozen(record.status && record.status !== 'Pending');
-      })
-      .catch(err => {
-        console.error(err);
-      });
-  }, [id]);
+  if (!id) return;
+  api(`/advising/${id}`)
+    .then(({ record }) => {
+      if (!record) return; // 👈 don't blow up
+
+      setLastTerm(record.lastTerm || '');
+      setLastGpa(record.lastGpa || '');
+      setCurrentTerm(record.currentTerm || '');
+      setLastTermCourses(record.lastTermCourses || []);
+      setRows(
+        record.courses && record.courses.length
+          ? record.courses
+          : [{ level: '', courseName: '' }]
+      );
+      setFrozen(record.status && record.status !== 'Pending');
+    })
+    .catch(err => {
+      console.error(err);
+    });
+}, [id]);
+
 
   function updateCourse(idx, key, value) {
     setRows(prev => {
