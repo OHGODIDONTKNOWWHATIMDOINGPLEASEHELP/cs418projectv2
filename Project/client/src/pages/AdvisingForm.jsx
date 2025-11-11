@@ -19,11 +19,15 @@ export default function AdvisingForm() {
   const isEdit = Boolean(id);
   const isFrozen = status === 'Approved' || status === 'Rejected';
 
+
+  useEffect(() => {
+  api('/courses')
+    .then(({ courses }) => setCourseOptions(courses || []))
+    .catch(() => setCourseOptions([]));
+}, []);
+
   // load existing record if editing
   useEffect(() => {
-    api('/courses')
-      .then(({ courses }) => setCourseOptions(courses || []))
-      .catch(() => setCourseOptions([]));
     if (!isEdit) return;
     api(`/advising/${id}`)
       .then(({ record }) => {
@@ -127,6 +131,7 @@ export default function AdvisingForm() {
     ))}
   </select>
 </div>
+
 
           {!isFrozen && courses.length > 1 && (
             <button type="button" className="btn secondary" onClick={() => removeRow(idx)}>Remove</button>
