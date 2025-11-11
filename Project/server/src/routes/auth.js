@@ -39,3 +39,5 @@ router.post('/login', async (req, res) => {
     return res.status(500).json({ error: 'server error' });
   }
 });
+
+export default router;
