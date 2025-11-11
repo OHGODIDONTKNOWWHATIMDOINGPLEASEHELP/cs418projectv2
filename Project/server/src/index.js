@@ -6,7 +6,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
-
+import coursesRoutes from './routes/courses.js';
 import authRoutes from './routes/auth.js';
 import advisingRoutes from './routes/advising.js';
 import userRoutes from './routes/user.js';
@@ -52,6 +52,7 @@ app.get('/', (_req, res) => res.json({ ok: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/courses', coursesRoutes);
 
 // 4) Start
 const PORT = process.env.PORT || 3001;
