@@ -23,56 +23,76 @@ function RequireGuest({ children }) {
 }
 
 export default function App() {
-  const { isAuthed, profile, logout } = useAuth();
+  const { ready, isAuthed, profile, logout } = useAuth();
+  if (!ready) return null; // or a spinner
+
+  const isAdmin = profile?.roles?.includes("admin");
 
   return (
-    <div className="app">
-      <header className="nav">
-        <h3><Link to="/" style={{ color: '#fff', textDecoration: 'none' }}>CS418</Link></h3>
-        <nav className="links">
-          {!isAuthed && (
+    <>
+      <nav className="topbar">
+        <div className="left">
+          <Link to="/">Home</Link>
+
+          {!isAdmin && isAuthed && (
             <>
-              <NavLink to="/login">Login</NavLink>
-              <NavLink to="/register">Register</NavLink>
+              <Link to="/advising">Advising</Link>
+              <Link to="/advising/history">History</Link>
             </>
           )}
 
-          {isAuthed && (
-            <>
-              <NavLink to="/me">My Home</NavLink>
-              <NavLink to="/advising">Advising</NavLink>
-              {profile?.roles?.includes('admin') && <NavLink to="/admin">Admin</NavLink>}
-              <button className="btn-link" onClick={logout} type="button">Logout</button>
-            </>
+          {isAdmin && (
+            <Link to="/admin/advising">Admin Advising</Link>
           )}
-        </nav>
-      </header>
+        </div>
 
-      <main className="container">
-        <section className="panel">
-          <Routes>
-            <Route path="/" element={<div>Welcome</div>} />
+        <div className="right">
+          {isAuthed ? (
+            <button onClick={logout} className="btn link">
+              Logout
+            </button>
+          ) : (
+            <Link to="/login">Login</Link>
+          )}
+        </div>
+      </nav>
 
-            {/* guests only */}
-            <Route path="/login" element={<RequireGuest><Login /></RequireGuest>} />
-            <Route path="/register" element={<RequireGuest><Register /></RequireGuest>} />
-            <Route path="/forgot" element={<RequireGuest><Forgot /></RequireGuest>} />
-            <Route path="/reset" element={<Reset />} />
-            <Route path="/verify" element={<Verify />} />
-            <Route path="/2fa" element={<TwoFA />} />
+      <Routes>
+        {/* public-ish */}
+        <Route path="/login" element={isAuthed ? <Navigate to="/" /> : <Login />} />
+        <Route path="/2fa" element={<TwoFA />} />
 
-            {/* logged in */}
-            <Route path="/me" element={<RequireAuth><Home /></RequireAuth>} />
-            <Route path="/advising" element={<RequireAuth><AdvisingHistory /></RequireAuth>} />
-            <Route path="/advising/new" element={<RequireAuth><AdvisingForm /></RequireAuth>} />
-            <Route path="/advising/:id" element={<RequireAuth><AdvisingForm /></RequireAuth>} />
-            <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
-            <Route path="/admin/advising" element={<RequireAuth><AdminAdvising /></RequireAuth>} />
+        {/* student-only advising */}
+        <Route
+          path="/advising"
+          element={
+            isAuthed && !isAdmin ? <AdvisingForm /> : <Navigate to="/" />
+          }
+        />
+        <Route
+          path="/advising/:id"
+          element={
+            isAuthed && !isAdmin ? <AdvisingForm /> : <Navigate to="/" />
+          }
+        />
+        <Route
+          path="/advising/history"
+          element={
+            isAuthed && !isAdmin ? <AdvisingHistory /> : <Navigate to="/" />
+          }
+        />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </section>
-      </main>
-    </div>
+        {/* admin-only advising list */}
+        <Route
+          path="/admin/advising"
+          element={
+            isAuthed && isAdmin ? <AdminAdvising /> : <Navigate to="/" />
+          }
+        />
+
+        {/* default */}
+        <Route path="/" element={<div className="page">Welcome</div>} />
+      </Routes>
+    </>
   );
 }
