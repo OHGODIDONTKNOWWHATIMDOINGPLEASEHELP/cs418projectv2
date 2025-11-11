@@ -1,37 +1,61 @@
-import { createContext, useContext, useState, useMemo } from 'react';
+// src/AuthContext.jsx
+import { createContext, useContext, useEffect, useState } from 'react';
+import { api } from './api';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(localStorage.getItem('token') || '');
-  const [profile, setProfile] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('profile') || 'null'); }
-    catch { return null; }
-  });
+  const [profile, setProfile] = useState(null);
+  const [ready, setReady] = useState(false);
 
-  const login = (newToken, user) => {
-    setToken(newToken);
+  useEffect(() => {
+    // is there even a token?
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setReady(true);
+      return;
+    }
+
+    // ask backend if this token is still valid
+    api('/auth/me')
+      .then(({ user }) => {
+        setProfile(user);
+        setReady(true);
+      })
+      .catch(() => {
+        // bad/expired token – throw it away
+        localStorage.removeItem('token');
+        setProfile(null);
+        setReady(true);
+      });
+  }, []);
+
+  function login(token, user) {
+    localStorage.setItem('token', token);
     setProfile(user);
-    localStorage.setItem('token', newToken || '');
-    localStorage.setItem('profile', JSON.stringify(user || null));
-  };
+  }
 
-  const logout = () => {
-    setToken('');
-    setProfile(null);
+  function logout() {
     localStorage.removeItem('token');
-    localStorage.removeItem('profile');
-  };
+    sessionStorage.removeItem('tempToken');
+    sessionStorage.removeItem('userId');
+    sessionStorage.removeItem('loginEmail');
+    setProfile(null);
+  }
 
-  const value = useMemo(() => ({
-    token,
-    profile,
-    isAuthed: !!token,
-    login,
-    logout,
-  }), [token, profile]);
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        isAuthed: !!profile,
+        profile,
+        login,
+        logout,
+        ready,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

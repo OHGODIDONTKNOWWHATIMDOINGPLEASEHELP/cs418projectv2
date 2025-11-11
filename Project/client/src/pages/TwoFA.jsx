@@ -19,6 +19,9 @@ export default function TwoFA() {
         method: 'POST',
         body: { code, tempToken, userId },
       });
+      const { login } = useAuth();
+login(token, user);
+
 
       // 👇 THIS is what advising will later use
       localStorage.setItem('token', token);

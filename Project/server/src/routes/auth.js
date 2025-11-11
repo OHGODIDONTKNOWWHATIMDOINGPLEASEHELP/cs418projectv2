@@ -4,6 +4,9 @@ import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import { signJwt, verifyJwt } from '../utils/jwt.js';
 import { sendMail } from '../utils/mailer.js';
+// at the top with your other imports
+import { requireAuth } from '../middleware/auth.js';
+
 
 const router = express.Router(); // 👈 create router FIRST
 
@@ -127,4 +130,17 @@ router.post('/verify-2fa', async (req, res) => {
   }
 });
 
+// GET /api/auth/me  – used by frontend on startup
+router.get('/me', requireAuth, (req, res) => {
+  return res.json({
+    ok: true,
+    user: {
+      id: req.user.id,
+      email: req.user.email,
+      roles: req.user.roles || [],
+    },
+  });
+});
+
 export default router;
+
