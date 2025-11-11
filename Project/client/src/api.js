@@ -16,8 +16,8 @@ export async function api(path, { method = 'GET', body } = {}) {
   const text = await res.text();
   const data = text ? JSON.parse(text) : {};
 
-  if (!res.ok) {
-    throw new Error(data.error || 'Request failed');
+   if (!res.ok) {
+    throw new Error(data.error || `Request failed with ${res.status}`);
   }
   return data;
 }

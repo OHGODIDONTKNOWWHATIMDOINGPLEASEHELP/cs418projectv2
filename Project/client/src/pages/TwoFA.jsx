@@ -1,4 +1,3 @@
-// src/pages/TwoFA.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
@@ -13,8 +12,8 @@ export default function TwoFA() {
   async function submit(e) {
     e.preventDefault();
     setMsg('');
+
     try {
-      // we stored tempToken/userId in sessionStorage during /auth/login step
       const tempToken = sessionStorage.getItem('tempToken');
       const userId = sessionStorage.getItem('userId');
 
@@ -23,11 +22,11 @@ export default function TwoFA() {
         body: { code, tempToken, userId },
       });
 
-      // SAVE final token so api.js can use it
-      login(token, user);              // goes into context
-      localStorage.setItem('token', token); // backup
+      // 👇 THIS is the important part
+      login(token, user);                   // goes into context
+      localStorage.setItem('token', token); // so api.js can read it
 
-      nav('/advising');  // or /me
+      nav('/advising');
     } catch (err) {
       setMsg(err.message);
     }
@@ -36,7 +35,12 @@ export default function TwoFA() {
   return (
     <form onSubmit={submit}>
       <h2>Enter 2FA code</h2>
-      <input value={code} onChange={e => setCode(e.target.value)} className="input" />
+      <input
+        className="input"
+        value={code}
+        onChange={e => setCode(e.target.value)}
+        required
+      />
       <button className="btn" type="submit">Verify</button>
       {msg && <p className="alert error">{msg}</p>}
     </form>
