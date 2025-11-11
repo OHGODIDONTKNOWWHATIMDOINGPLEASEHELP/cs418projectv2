@@ -1,6 +1,7 @@
 // Single source of truth for API calls
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API = import.meta.env.VITE_API_URL || 'https://cs418projectv2.onrender.com';
+
 
 // one-time log so you can confirm the base in the browser console
 if (!window.__apiBaseLogged) {
