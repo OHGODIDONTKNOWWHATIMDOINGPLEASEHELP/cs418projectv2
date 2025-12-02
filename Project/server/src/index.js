@@ -23,7 +23,15 @@ const allowedOrigins = [
 ];
 
 // global middleware
-app.use(helmet());
+app.use(helmet({
+  frameguard: { action: 'deny' }, // X-Frame-Options: DENY
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      'frame-ancestors': ["'none'"], // modern clickjacking defense
+    },
+  },
+}));
 app.use(express.json());
 app.use(cookieParser());
 app.use(
