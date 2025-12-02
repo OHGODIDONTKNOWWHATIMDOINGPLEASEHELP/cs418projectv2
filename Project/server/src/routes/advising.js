@@ -39,6 +39,37 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
+// LIST (history) – GET /api/advising
+router.get('/', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const records = await Advising.find({ user: userId })
+      .sort({ createdAt: -1 });
+    res.json({ ok: true, records });
+  } catch (err) {
+    console.error('GET /api/advising error:', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// GET ONE – GET /api/advising/:id
+router.get('/:id', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { id } = req.params;
+    if (!id || id.length < 12) return res.status(400).json({ error: 'invalid id' });
+
+    const record = await Advising.findOne({ _id: id, user: userId });
+    if (!record) return res.status(404).json({ error: 'not found' });
+
+    res.json({ ok: true, record });
+  } catch (err) {
+    console.error('GET /api/advising/:id error:', err);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+
 // UPDATE
 router.put('/:id', requireAuth, async (req, res) => {
   try {
