@@ -1,33 +1,17 @@
 import mongoose from 'mongoose';
 
-const CourseRowSchema = new mongoose.Schema(
-  {
-    level: { type: String, default: '' },       // e.g. "Undergraduate"
-    courseName: { type: String, default: '' },  // e.g. "CS418"
+const advisingSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  lastTerm: { type: String, default: '' },
+  lastGpa:   { type: String, default: '' },
+  currentTerm: { type: String, default: '' },
+  courses: {
+    type: [{ level: String, courseName: String }],
+    default: [],
   },
-  { _id: false }
-);
+  lastTermCourses: { type: [String], default: [] },
+  status: { type: String, enum: ['Pending','Approved','Rejected'], default: 'Pending' },
+  adminFeedback: { type: String, default: '' },
+}, { timestamps: true });
 
-const AdvisingSchema = new mongoose.Schema(
-  {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-
-    // header section
-    lastTerm: { type: String, default: '' },    // e.g. "Fall 2024"
-    lastGpa: { type: String, default: '' },     // keep string to avoid float issues
-    currentTerm: { type: String, default: '' }, // e.g. "Spring 2025"
-
-    // course plan section
-    courses: { type: [CourseRowSchema], default: [] },
-
-    // status workflow
-    status: {
-      type: String,
-      enum: ['Pending', 'Approved', 'Rejected'],
-      default: 'Pending',
-    },
-  },
-  { timestamps: true }
-);
-
-export default mongoose.model('Advising', AdvisingSchema);
+export default mongoose.model('Advising', advisingSchema);
