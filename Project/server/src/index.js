@@ -24,11 +24,43 @@ const allowedOrigins = [
 
 // global middleware
 app.use(helmet({
-  frameguard: { action: 'deny' }, // X-Frame-Options: DENY
+  frameguard: { action: 'deny' },         // X-Frame-Options: DENY
   contentSecurityPolicy: {
     useDefaults: true,
     directives: {
-      'frame-ancestors': ["'none'"], // modern clickjacking defense
+      // prevent your site from being framed (clickjacking)
+      'frame-ancestors': ["'none'"],
+
+      // reCAPTCHA needs scripts and iframes from Google
+      'script-src': [
+        "'self'",
+        "'unsafe-inline'",                  // react-google-recaptcha injects inline scripts
+        'https://www.google.com',
+        'https://www.gstatic.com',
+        'https://www.recaptcha.net'
+      ],
+      'frame-src': [
+        'https://www.google.com',
+        'https://www.gstatic.com',
+        'https://www.recaptcha.net'
+      ],
+      'img-src': [
+        "'self'",
+        'data:',
+        'https://www.google.com',
+        'https://www.gstatic.com',
+        'https://www.recaptcha.net'
+      ],
+      'connect-src': [
+        "'self'",
+        'https://www.google.com',
+        'https://www.gstatic.com',
+        'https://www.recaptcha.net'
+      ],
+      'style-src': [
+        "'self'",
+        "'unsafe-inline'"                   // recaptcha injects inline styles
+      ],
     },
   },
 }));
