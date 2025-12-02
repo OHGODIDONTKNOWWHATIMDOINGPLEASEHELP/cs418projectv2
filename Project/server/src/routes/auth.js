@@ -26,6 +26,12 @@ const router = express.Router(); // 👈 create router FIRST
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
+    const PWD_RX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
+if (!PWD_RX.test(password)) {
+  return res.status(400).json({ error: 'weak password' });
+}
+
+
     const { email, password } = req.body || {};
     if (!email || !password) {
       return res.status(400).json({ error: 'email and password required' });

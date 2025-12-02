@@ -22,6 +22,10 @@ router.post('/me', requireAuth, async (req, res) => {
 
 // 9 Change password (authenticated)
 router.post('/change-password', requireAuth, async (req, res) => {
+  const PWD_RX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
+if (!PWD_RX.test(password)) {
+  return res.status(400).json({ error: 'weak password' });
+}
   const { currentPassword, newPassword } = req.body || {};
   const user = await User.findById(req.user.uid);
   const ok = await bcrypt.compare(currentPassword, user.passwordHash);
