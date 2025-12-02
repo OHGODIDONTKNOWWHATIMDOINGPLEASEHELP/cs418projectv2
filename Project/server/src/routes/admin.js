@@ -12,25 +12,20 @@ router.get('/advising', requireAuth, requireAdmin, async (req, res) => {
   res.json({ ok: true, records });
 });
 
-// approve
-router.patch('/advising/:id/approve', requireAuth, requireAdmin, async (req, res) => {
+router.patch('/advising/:id/decision', requireAuth, requireAdmin, async (req,res)=>{
   const { id } = req.params;
+  const { decision, message } = req.body || {};
+  if (!['Approved','Rejected'].includes(decision))
+    return res.status(400).json({ error: 'bad decision' });
+
   const doc = await Advising.findById(id);
   if (!doc) return res.status(404).json({ error: 'not found' });
 
-  doc.status = 'Approved';
+  doc.status = decision;
+  doc.adminFeedback = message || '';
   await doc.save();
-  res.json({ ok: true, record: doc });
-});
 
-// reject
-router.patch('/advising/:id/reject', requireAuth, requireAdmin, async (req, res) => {
-  const { id } = req.params;
-  const doc = await Advising.findById(id);
-  if (!doc) return res.status(404).json({ error: 'not found' });
-
-  doc.status = 'Rejected';
-  await doc.save();
+  // optional: email notification (see #9)
   res.json({ ok: true, record: doc });
 });
 

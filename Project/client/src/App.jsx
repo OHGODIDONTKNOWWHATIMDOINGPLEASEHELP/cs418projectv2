@@ -106,7 +106,13 @@ export default function App() {
           element={
             isAuthed && isAdmin ? <AdminAdvising /> : <Navigate to="/" />
           }
+        
         />
+        <Route
+  path="/admin/advising/:id"
+  element={isAuthed && isAdmin ? <AdminAdvisingView /> : <Navigate to="/" />}
+/>
+
 
         {/* default */}
         <Route path="/" element={<div className="page">Welcome</div>} />
