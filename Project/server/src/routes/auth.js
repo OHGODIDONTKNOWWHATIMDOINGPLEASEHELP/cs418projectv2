@@ -7,6 +7,19 @@ import { sendMail } from '../utils/mailer.js';
 // at the top with your other imports
 import { requireAuth } from '../middleware/auth.js';
 
+async function verifyCaptcha(token, ip) {
+  const secret = process.env.RECAPTCHA_SECRET;
+  if (!secret) return false;
+  const params = new URLSearchParams({ secret, response: token, remoteip: ip || '' });
+  const res = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params.toString()
+  });
+  const data = await res.json();
+  return !!data.success;
+}
+
 
 const router = express.Router(); // 👈 create router FIRST
 
@@ -55,7 +68,10 @@ router.post('/register', async (req, res) => {
 // POST /api/auth/login  (stage 1)
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body || {};
+    const { email, password, captcha } = req.body || {};
+    if (!captcha) return res.status(400).json({ error: 'captcha required' });
+const okCaptcha = await verifyCaptcha(captcha, req.ip);
+if (!okCaptcha) return res.status(400).json({ error: 'captcha failed' });
     const user = await User.findOne({ email: (email || '').toLowerCase() });
     if (!user) return res.status(401).json({ error: 'invalid credentials' });
 

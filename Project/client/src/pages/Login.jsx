@@ -2,20 +2,24 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import ReCAPTCHA from 'react-google-recaptcha';
+const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [msg, setMsg] = useState('');
   const nav = useNavigate();
+  const [captcha, setCaptcha] = useState('');
 
   async function submit(e) {
     e.preventDefault();
     setMsg('');
+    if (!captcha) return setMsg('Please complete reCAPTCHA.');
     try {
       const { ok, tempToken, userId } = await api('/auth/login', {
         method: 'POST',
-        body: { email, password },
+        body: { email, password, captcha },
       });
 
       // ✅ store for step 2
@@ -57,6 +61,10 @@ export default function Login() {
         </button>
 
         {msg && <p className="alert error">{msg}</p>}
+        
+        <ReCAPTCHA sitekey={siteKey} onChange={setCaptcha} />
+      <button className="btn primary" type="submit">Continue</button>
+      {msg && <p className="alert error">{msg}</p>}
       </form>
     </div>
   );
