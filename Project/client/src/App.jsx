@@ -11,6 +11,7 @@ import Admin from './pages/Admin.jsx';
 import AdvisingHistory from './pages/AdvisingHistory.jsx';
 import AdvisingForm from './pages/AdvisingForm.jsx';
 import AdminAdvising from './pages/AdminAdvising.jsx';
+import AdminAdvisingView from './pages/AdminAdvisingView.jsx';
 
 function RequireAuth({ children }) {
   const { isAuthed } = useAuth();
@@ -102,13 +103,10 @@ export default function App() {
 
         {/* admin-only advising list */}
         <Route
-          path="/admin/advising"
-          element={
-            isAuthed && isAdmin ? <AdminAdvising /> : <Navigate to="/" />
-          }
-        
-        />
-        <Route
+  path="/admin/advising"
+  element={isAuthed && isAdmin ? <AdminAdvising /> : <Navigate to="/" />}
+/>
+<Route
   path="/admin/advising/:id"
   element={isAuthed && isAdmin ? <AdminAdvisingView /> : <Navigate to="/" />}
 />
