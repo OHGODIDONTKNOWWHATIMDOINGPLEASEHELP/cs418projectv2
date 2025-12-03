@@ -17,6 +17,7 @@ export default function AdvisingForm() {
   const [rows, setRows] = useState([{ level: '', courseName: '' }]);
   const [frozen, setFrozen] = useState(false);
   const [msg, setMsg] = useState('');
+  const [adminFeedback, setAdminFeedback] = useState('');
 
   // load available courses
   useEffect(() => {
@@ -42,6 +43,27 @@ export default function AdvisingForm() {
       })
       .catch(err => setMsg(err.message || 'Failed to load advising record.'));
   }, [id, isEdit]);
+
+  useEffect(() => {
+  if (!isEdit) return;
+  api(`/advising/${id}`)
+    .then(({ record }) => {
+      if (!record) return;
+      // ...your existing setState calls...
+      setAdminFeedback(record.adminFeedback || '');
+      setFrozen(record.status && record.status !== 'Pending');
+    })
+    .catch(err => setMsg(err.message || 'Failed to load advising record.'));
+}, [id, isEdit]);
+
+// 3) inside your return(), show the feedback when frozen
+{frozen && (
+  <div className="alert" style={{whiteSpace: 'pre-wrap'}}>
+    <strong>Advisor Feedback:</strong>
+    <br />
+    {adminFeedback ? adminFeedback : 'No message provided.'}
+  </div>
+)}
 
   function updateCourse(idx, key, value) {
     setRows(prev => {
