@@ -1,5 +1,6 @@
 import { Routes, Route, Link, NavLink, Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext.jsx';
+import {helmet} from "react-helmet";
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Verify from './pages/Verify.jsx';
@@ -31,6 +32,10 @@ export default function App() {
 
   return (
     <>
+      <Helmet>
+        <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
+      </Helmet>
+
       <nav className="topbar">
   <div className="left">
     <Link to="/">Home</Link>
