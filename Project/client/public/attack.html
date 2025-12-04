@@ -1,8 +1,15 @@
+<!-- public/attack.html -->
 <!doctype html>
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Clickjack Test</title>
+    <style>
+      iframe { width: 1200px; height: 800px; border: 4px solid red; }
+    </style>
+  </head>
   <body>
-    <h3>Attempting to frame the site (should be blocked):</h3>
-    <iframe src="https://cs418project.netlify.app/" width="800" height="600"></iframe>
-    <p>If protections work, this iframe will be blocked by the browser.</p>
+    <h1>Attempting to iframe the site…</h1>
+    <iframe src="https://cs418project.netlify.app" id="victim"></iframe>
   </body>
 </html>
