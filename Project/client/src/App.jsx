@@ -30,8 +30,12 @@ export default function App() {
   return (
     <>
       <Helmet>
-        <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
-      </Helmet>
+  {/* Classic + most compatible */}
+  <link rel="icon" href="/favicon.ico?v=3" sizes="any" />
+  {/* PNG fallback (kept) */}
+  <link rel="icon" type="image/png" href="/favicon.png?v=3" sizes="32x32" />
+</Helmet>
+
 
       <nav className="topbar">
         <div className="left">
