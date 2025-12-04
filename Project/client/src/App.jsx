@@ -8,6 +8,7 @@ import TwoFA from './pages/TwoFA.jsx';
 import Forgot from './pages/Forgot.jsx';
 import Reset from './pages/Reset.jsx';
 import Home from './pages/Home.jsx';
+import Profile from './pages/Profile.jsx';
 import Admin from './pages/Admin.jsx';
 import AdvisingHistory from './pages/AdvisingHistory.jsx';
 import AdvisingForm from './pages/AdvisingForm.jsx';
@@ -77,6 +78,10 @@ export default function App() {
         <Route path="/forgot" element={isAuthed ? <Navigate to="/" /> : <Forgot />} />
 
         {/* student-only advising */}
+        <Route
+          path="/profile"
+          element={isAuthed ? <Profile /> : <Navigate to="/login" />}
+        />
         <Route
           path="/advising"
           element={
