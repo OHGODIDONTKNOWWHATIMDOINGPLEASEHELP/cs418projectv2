@@ -1,72 +1,73 @@
+// client/src/pages/Profile.jsx
 import { useEffect, useState } from 'react';
 import { api } from '../api';
-import useAuth from '../useAuth';
 
-export default function Me() {
-  const { token, profile, saveAuth } = useAuth();
-  const [form, setForm] = useState({ givenName:'', familyName:'' });
-  const [pw, setPw] = useState({ currentPassword:'', newPassword:'' });
+export default function Profile() {
+  const [user, setUser] = useState(null);
   const [msg, setMsg] = useState('');
+  const [form, setForm] = useState({ givenName: '', familyName: '' });
+  const [pw, setPw] = useState({ currentPassword: '', newPassword: '' });
 
   useEffect(() => {
-    api('/user/me', { token }).then(p => {
-      setForm({ givenName: p.givenName || '', familyName: p.familyName || '' });
-      saveAuth(token, p);
-    }).catch(e=>setMsg(e.message));
+    api('/user/me')
+      .then((data) => {
+        const u = data?.user || data; // accept both shapes
+        setUser(u);
+        setForm({ givenName: u?.givenName || '', familyName: u?.familyName || '' });
+      })
+      .catch((e) => setMsg(e.message || 'Failed to load profile'));
   }, []);
 
-  async function saveProfile(e){
+  async function saveProfile(e) {
     e.preventDefault();
     try {
-      const p = await api('/user/me', { method:'POST', body: form, token });
-      saveAuth(token, p);
+      const data = await api('/user/me', { method: 'POST', body: form });
+      const u = data?.user || data;
+      setUser(u);
       setMsg('Profile saved');
-    } catch(e){ setMsg(e.message); }
+    } catch (e) {
+      setMsg(e.message || 'Save failed');
+    }
   }
 
-  async function changePw(e){
+  async function changePw(e) {
     e.preventDefault();
-    try { await api('/user/change-password', { method:'POST', body: pw, token });
+    try {
+      await api('/user/change-password', { method: 'POST', body: pw });
+      setPw({ currentPassword: '', newPassword: '' });
       setMsg('Password changed');
-    } catch(e){ setMsg(e.message); }
+    } catch (e) {
+      setMsg(e.message || 'Change failed');
+    }
   }
 
-  <div className="app">
-  <header className="nav">
-    <h3>CS418</h3>
-    <nav className="links">
-      <a href="/login">Login</a>
-      <a href="/register">Register</a>
-      <a href="/me">Home</a>
-      <a href="/admin">Admin</a>
-    </nav>
-  </header>
-
-  <main className="container">
-    <section className="panel fade-in">
-      {/* page-specific content here */}
-    </section>
-  </main>
-</div>
-
+  if (msg && !user) return <div className="page"><p className="alert error">{msg}</p></div>;
+  if (!user) return <div className="page">Loading…</div>;
 
   return (
-    <div>
-      <h2>My homepage</h2>
-      <p>Email (immutable): {profile?.email}</p>
-      <form onSubmit={saveProfile}>
-        <input value={form.givenName} onChange={e=>setForm({...form, givenName:e.target.value})}/>
-        <input value={form.familyName} onChange={e=>setForm({...form, familyName:e.target.value})}/>
-        <button>Save profile</button>
-      </form>
+    <div className="page">
+      <h2>My Profile</h2>
+      <div className="card">
+        <p><b>Email:</b> {user.email}</p>
+        <form onSubmit={saveProfile} className="form">
+          <label>First name</label>
+          <input className="input" value={form.givenName} onChange={e => setForm({ ...form, givenName: e.target.value })} />
+          <label>Last name</label>
+          <input className="input" value={form.familyName} onChange={e => setForm({ ...form, familyName: e.target.value })} />
+          <button className="btn primary" type="submit">Save profile</button>
+        </form>
+      </div>
 
       <h3>Change password</h3>
-      <form onSubmit={changePw}>
-        <input type="password" placeholder="Current" value={pw.currentPassword} onChange={e=>setPw({...pw, currentPassword:e.target.value})}/>
-        <input type="password" placeholder="New" value={pw.newPassword} onChange={e=>setPw({...pw, newPassword:e.target.value})}/>
-        <button>Change</button>
+      <form onSubmit={changePw} className="form">
+        <input className="input" type="password" placeholder="Current" value={pw.currentPassword}
+               onChange={e => setPw({ ...pw, currentPassword: e.target.value })} />
+        <input className="input" type="password" placeholder="New" value={pw.newPassword}
+               onChange={e => setPw({ ...pw, newPassword: e.target.value })} />
+        <button className="btn" type="submit">Change</button>
       </form>
-      <p>{msg}</p>
+
+      {msg && <p className="alert">{msg}</p>}
     </div>
   );
 }
